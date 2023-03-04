@@ -126,4 +126,9 @@ public class RobotContainer {
     //return exampleAuto.trajectory(m_exampleSubsystem);
     return new DBFR(s_Swerve);
   }
+  public Command getPrightside() {
+    // An example command will be run in autonomous
+    //return exampleAuto.trajectory(m_exampleSubsystem);
+    return new Prightside(s_Swerve);
+  }
 }
