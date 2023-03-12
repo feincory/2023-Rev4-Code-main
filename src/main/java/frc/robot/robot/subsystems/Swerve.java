@@ -17,11 +17,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 //import frc.robot.SwerveModule;
 import frc.robot.robot.SwerveModule;
 import frc.robot.robot.Constants;
+import frc.robot.robot.Robot;
 
 public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
     public SwerveModule[] mSwerveMods;
-    public Pigeon2 gyro;
+    public static Pigeon2 gyro;
 
     public Swerve() {
         gyro = new Pigeon2(Constants.Swerve.pigeonID, "driveCAN");
@@ -45,9 +46,21 @@ public class Swerve extends SubsystemBase {
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
-        SwerveModuleState[] swerveModuleStates =
+        SwerveModuleState[] swerveModuleStates;
+        if(Robot.autobalancesbutton){
+            swerveModuleStates = 
             Constants.Swerve.swerveKinematics.toSwerveModuleStates(
-                fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
+               ChassisSpeeds.fromFieldRelativeSpeeds(
+                                    Robot.autobalancespeed, 
+                                    0, 
+                                    0, 
+                                    getYaw()
+                                ));
+        }        
+        else {
+        swerveModuleStates = 
+            Constants.Swerve.swerveKinematics.toSwerveModuleStates(
+               fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
                                     translation.getX(), 
                                     translation.getY(), 
                                     rotation, 
@@ -57,7 +70,7 @@ public class Swerve extends SubsystemBase {
                                     translation.getX(), 
                                     translation.getY(), 
                                     rotation)
-                                );
+                                );}
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
         for(SwerveModule mod : mSwerveMods){

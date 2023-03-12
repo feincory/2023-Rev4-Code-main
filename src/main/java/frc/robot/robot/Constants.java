@@ -10,7 +10,7 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.lib.util.COTSFalconSwerveConstants;
 import frc.robot.lib.util.SwerveModuleConstants;
 public final class Constants {
-    public static final double stickDeadband = 0.07;
+    public static final double stickDeadband = 0.05;
 
     public static final class Swerve {
         public static final int pigeonID = 6;
@@ -131,8 +131,8 @@ public final class Constants {
 
 
     public static final class AutoConstants { //TODO: The below constants are used in the example auto, and must be tuned to specific robot
-        public static final double kMaxSpeedMetersPerSecond = 3.5;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 3;
+        public static final double kMaxSpeedMetersPerSecond = 3.7;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 2.5;
         public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
         public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
     

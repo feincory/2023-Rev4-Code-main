@@ -30,9 +30,9 @@ public class Prightside extends SequentialCommandGroup {
                 // Start at the origin facing the +X direction
                 new Pose2d(0, 0, new Rotation2d(0)),
                 // Pass through these two interior waypoints, making an 's' curve path
-                List.of(new Translation2d(4.5, .52),new Translation2d(4.5, .56)),
+                List.of(new Translation2d(4.5, .5),new Translation2d(4.5, .51)),
                 // End 3 meters straight ahead of where we started, facing forward
-                new Pose2d(-.1, .7, new Rotation2d(0)),
+                new Pose2d(-.2, .7, new Rotation2d(0)),
                 config);
 
         var thetaController =

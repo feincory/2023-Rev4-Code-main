@@ -32,13 +32,15 @@ public class RobotContainer {
   private final Joystick m_flight = new Joystick(0);
     
   /* Drive Controls */
-  private final int translationAxis = 2;
-  private final int strafeAxis = 5;
-  private final int rotationAxis = 0;
+//old controler 2,5,0
+  private final int translationAxis = 1;
+  private final int strafeAxis = 0;
+  private final int rotationAxis = 3;
 
   /* m_flight Buttons */
-  private final JoystickButton zeroGyro = new JoystickButton(m_flight,3);
-  private final JoystickButton robotCentric = new JoystickButton(m_flight, 1);
+  // old controler 3, 1 
+  private final JoystickButton zeroGyro = new JoystickButton(m_flight,14);
+  private final JoystickButton robotCentric = new JoystickButton(m_flight, 4);
 
   private final Swerve s_Swerve = new Swerve();
   //private final boolean robotCentrictogglestate;
@@ -62,7 +64,7 @@ public class RobotContainer {
     s_Swerve.setDefaultCommand(
       new TeleopSwerve(
           s_Swerve, 
-          () -> -m_flight.getRawAxis(translationAxis), 
+          () -> m_flight.getRawAxis(translationAxis), 
           () -> -m_flight.getRawAxis(strafeAxis), 
           () -> -m_flight.getRawAxis(rotationAxis)*.6, 
           () -> robotCentric.getAsBoolean()
