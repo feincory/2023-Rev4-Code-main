@@ -64,9 +64,9 @@ public class RobotContainer {
     s_Swerve.setDefaultCommand(
       new TeleopSwerve(
           s_Swerve, 
-          () -> m_flight.getRawAxis(translationAxis), 
-          () -> -m_flight.getRawAxis(strafeAxis), 
-          () -> -m_flight.getRawAxis(rotationAxis)*.6, 
+          () -> Math.copySign(m_flight.getRawAxis(translationAxis)*m_flight.getRawAxis(translationAxis), m_flight.getRawAxis(translationAxis)), 
+          () -> -Math.copySign(m_flight.getRawAxis(strafeAxis)*m_flight.getRawAxis(strafeAxis), m_flight.getRawAxis(strafeAxis)), 
+          () -> -Math.copySign(m_flight.getRawAxis(rotationAxis)*m_flight.getRawAxis(rotationAxis), m_flight.getRawAxis(rotationAxis))*.6, 
           () -> robotCentric.getAsBoolean()
       )
   );

@@ -10,7 +10,7 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.lib.util.COTSFalconSwerveConstants;
 import frc.robot.lib.util.SwerveModuleConstants;
 public final class Constants {
-    public static final double stickDeadband = 0.05;
+    public static final double stickDeadband = 0.02;
 
     public static final class Swerve {
         public static final int pigeonID = 6;

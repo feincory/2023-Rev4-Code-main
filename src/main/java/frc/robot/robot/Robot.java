@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 //import edu.wpi.first.wpilibj.interfaces.Gyro;
@@ -41,11 +42,12 @@ import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import frc.robot.robot.subsystems.Swerve;
 import frc.robot.robot.Constants;
 import java.sql.Time;
-
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -62,9 +64,13 @@ public class Robot extends TimedRobot {
   // solenoids
   private final Solenoid m_IntakeSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 1);
   private Solenoid m_gripperSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 0);
-  private final Solenoid brakSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 3 ); // you madmen wrote the WHOLE CODE with a misspelling of "break?!?!?!?!?"
+  private final Solenoid mrflippySolenoid = new Solenoid(31,
+  PneumaticsModuleType.REVPH, 4 );
+  private final Solenoid brakSolenoid = new Solenoid(31,
+  PneumaticsModuleType.REVPH, 3 ); // you madmen wrote the WHOLE CODE with a misspelling of "break?!?!?!?!?"
  // Motors
 
+ 
 
  //Auto Balance Varibles 
  public static double autobalancespeed;
@@ -105,6 +111,7 @@ public double telescopeencoderpos;
 public int homingstep;
 public Double telescopecommandposition;
 static final double[] kTelescopearray = {-45000,-23000,-13500,-13500,-23000,-45000};
+public double stickDeadband;
 //{-45000,-23000,-22000,-14000,-14000,-22000,-23000,-45000}
 private boolean extenedTelescope;
 private double telescopemanual;
@@ -192,7 +199,12 @@ private RobotContainer m_robotContainer;
  
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-   
+   // auto chooser 
+    SendableChooser<Command> m_chooser = new SendableChooser<>();
+    m_chooser.setDefaultOption("Simple Auto", m_autonomousCommand);
+   m_chooser.addOption("Complex Auto", m_autonomousCommand);
+
+   Shuffleboard.getTab("Autonomous").add(m_chooser);
     //motors
    m_IntakeMotor = new CANSparkMax(IntakeDeviceID, MotorType.kBrushed);
    reverseintake = false;
@@ -291,7 +303,7 @@ if (autobalancesbutton == true){
     //Telecope Section
 
 
-
+    SmartDashboard.putNumber("arm position", m_potentiometer.get());
   SmartDashboard.putNumber("telescopecommandposition", telescopecommandposition);      
   SmartDashboard.putNumber("m index", m_index);    
   SmartDashboard.putBoolean("arm manual mode", isarminmanuel);
@@ -312,8 +324,12 @@ if (autobalancesbutton == true){
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
+
   @Override
   public void autonomousInit() {
+
+    SendableChooser<Command> m_chooser = new SendableChooser<>();
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     m_DBFL = m_robotContainer.getDBFL();
     m_Prightside = m_robotContainer.getPrightside();
@@ -557,7 +573,13 @@ SmartDashboard.putNumber("autonnumber", p);
  //3 stop motor and set motor position to 0
  //4 automatic mode, set motor positions
  //5 manaul mode, run motor by voltage
- 
+ //stickDeadband = Constants.stickDeadband;
+ /*if(extenedTelescope = true){
+  stickDeadband = 0;
+  }
+  else {
+    stickDeadband = 0.05;
+  }*/
 
  brakSolenoid.set(true);
  //SmartDashboard.putNumber("telescope encoder", m_Telescope.getSelectedSensorPosition());
@@ -651,10 +673,17 @@ if (homingstep == 5){
  */
 if (m_Driver2.getLeftBumperPressed()) {
   m_gripperSolenoid.set(false);}
-if (m_Driver2.getRightBumperPressed()){
+if (m_Driver2.getRightBumperPressed()||m_Flight.getRawButtonPressed(10)||m_Flight.getRawButtonPressed(11)){
   m_gripperSolenoid.set(true);
 }  
-    
+
+if (m_Flight.getRawButton(9)) {
+  //mrflippySolenoid.set(true);
+} 
+  else {
+    mrflippySolenoid.set(false);
+  } 
+
 
 //telescope arm
 if (m_Driver2.getXButtonPressed() ) {
@@ -686,7 +715,7 @@ if(extenedTelescope){
 
 
 
- SmartDashboard.putNumber("arm position", m_potentiometer.get());
+ //SmartDashboard.putNumber("arm position", m_potentiometer.get());
  SmartDashboard.putNumber("homing step", homingstep);
  //}
 
@@ -747,10 +776,12 @@ telescopesafe = true;
       if(reverseintake){
         m_IntakeMotor.set(.5);
         Blinken.set(-.31);
+        m_Driver2.setRumble(RumbleType.kBothRumble, 1);
         //m_convayor.set(((1+m_Flight.getRawAxis(6))/2));
       }else{
       m_IntakeMotor.set(-.5); 
       Blinken.set(-.89);
+      m_Driver2.setRumble(RumbleType.kBothRumble, 0);
       //m_IntakeMotor.set(-((1+m_Flight.getRawAxis(6))/2)); 
       //m_convayor.set(-((1+m_Flight.getRawAxis(6))/2));
      
