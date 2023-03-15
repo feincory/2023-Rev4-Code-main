@@ -48,6 +48,8 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.Timer;
+
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -56,7 +58,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
  */
 public class Robot extends TimedRobot {
   public static CTREConfigs ctreConfigs;
-  
+  private final Timer m_timer = new Timer();
    // Joysticks
   private final Joystick m_Flight = new Joystick(0);
   private final XboxController m_Driver2 = new XboxController(1);
@@ -266,7 +268,10 @@ private RobotContainer m_robotContainer;
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-
+    double txb = LimelightHelpers.getTX("limelight-bottom");
+    double tab = LimelightHelpers.getTA("limelight-bottom");
+    double txt = LimelightHelpers.getTX("limelight-top");
+    double tat = LimelightHelpers.getTA("limelight-top");
 //autobalance logic
 gyropitch = Swerve.gyro.getRoll();
 autobalancesbutton = m_Flight.getRawButton(13);
@@ -283,7 +288,18 @@ if (autobalancesbutton == true){
  SmartDashboard.putBoolean("stop auto?", stopauto);
  SmartDashboard.getBoolean("stop auto?", false);
 
- 
+ if (txt<.3
+ && txt>-3
+&& tat != 0
+&& (m_index == 1|| m_index == 0)){
+Blinken.set(.57);
+}else{
+ if (txb<.3
+     && txb>-3
+    && tab != 0
+    && (m_index == 4|| m_index == 5)){
+  Blinken.set(.57);
+ }else{
     if (m_index == 0 || m_index == 5){
       armhigh = true;
       Blinken.set(.23);
@@ -296,7 +312,7 @@ if (autobalancesbutton == true){
      if (m_index == 2){
       armmid = true;
       Blinken.set(.83);
-     }
+     }}}
      
      
 
@@ -673,9 +689,21 @@ if (homingstep == 5){
  */
 if (m_Driver2.getLeftBumperPressed()) {
   m_gripperSolenoid.set(false);}
-if (m_Driver2.getRightBumperPressed()||m_Flight.getRawButtonPressed(10)||m_Flight.getRawButtonPressed(11)){
+if (/*m_Driver2.getRightBumperPressed()||*/m_Flight.getRawButtonPressed(10)||m_Flight.getRawButtonPressed(11)){
   m_gripperSolenoid.set(true);
+  m_timer.restart();
 }  
+if (m_Driver2.getRightBumperPressed()){
+  m_gripperSolenoid.set(true);
+ // m_timer.restart();
+} 
+
+
+
+if (m_timer.get() > .6 && m_timer.get() < .65) {
+  // Drive forwards half speed, make sure to turn input squaring off
+  extenedTelescope = false;
+}
 
 if (m_Flight.getRawButton(9)) {
   //mrflippySolenoid.set(true);
@@ -764,6 +792,7 @@ telescopesafe = true;
 } else telescopesafe = false; 
 
 
+
   m_IntakeSolenoid.set(m_Flight.getRawButton(kSolenoidButton));
 
   if (m_Flight.getRawButton(1)){
@@ -779,7 +808,7 @@ telescopesafe = true;
         m_Driver2.setRumble(RumbleType.kBothRumble, 1);
         //m_convayor.set(((1+m_Flight.getRawAxis(6))/2));
       }else{
-      m_IntakeMotor.set(-.5); 
+      m_IntakeMotor.set(-.55); 
       Blinken.set(-.89);
       m_Driver2.setRumble(RumbleType.kBothRumble, 0);
       //m_IntakeMotor.set(-((1+m_Flight.getRawAxis(6))/2)); 
