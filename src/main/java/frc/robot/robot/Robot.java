@@ -38,7 +38,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
-
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import frc.robot.robot.subsystems.Swerve;
 import frc.robot.robot.Constants;
 import java.sql.Time;
@@ -61,13 +61,14 @@ public class Robot extends TimedRobot {
   private final Timer m_timer = new Timer();
    // Joysticks
   private final Joystick m_Flight = new Joystick(0);
-  private final XboxController m_Driver2 = new XboxController(1);
+  private final static XboxController m_Driver2 = new XboxController(1);
 
   // solenoids
   private final Solenoid m_IntakeSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 1);
   private Solenoid m_gripperSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 0);
-  private final Solenoid mrflippySolenoid = new Solenoid(31,
-  PneumaticsModuleType.REVPH, 4 );
+  private final Solenoid mrflippySolenoid = new  Solenoid(31, PneumaticsModuleType.REVPH, 4 );
+  private final Solenoid mrflippySolenoidinvesre = new  Solenoid(31, PneumaticsModuleType.REVPH, 5 );
+  public static boolean mrflippystate;
   private final Solenoid brakSolenoid = new Solenoid(31,
   PneumaticsModuleType.REVPH, 3 ); // you madmen wrote the WHOLE CODE with a misspelling of "break?!?!?!?!?"
  // Motors
@@ -174,6 +175,9 @@ private RobotContainer m_robotContainer;
     m_Telescope.configFactoryDefault();
     m_Telescope.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,0,100);
     m_Telescope.setInverted(false);
+    m_Telescope.enableCurrentLimit(true);
+    m_Telescope.configPeakCurrentLimit(50, 100);
+    m_Telescope.configClosedloopRamp(.15);
     m_Telescope.setSensorPhase(true);
     m_Telescope.configNominalOutputForward(0);
 		m_Telescope.configNominalOutputReverse(0);
@@ -183,7 +187,7 @@ private RobotContainer m_robotContainer;
     telescopeencoderpos = 1500;
     		/* Config Position Closed Loop gains in slot0, tsypically kF stays zero. */
 		
-		m_Telescope.config_kP(0, .4);
+		m_Telescope.config_kP(0, .3);
 		m_Telescope.config_kI(0, 0);
 		m_Telescope.config_kD(0, 0);
     m_Telescope.config_kF(0, 0);
@@ -223,6 +227,7 @@ private RobotContainer m_robotContainer;
    m_rotate.setIdleMode(IdleMode.kBrake);
    m_rotate.setInverted(true);
    m_rotate.setOpenLoopRampRate(.4);
+   m_rotate.setClosedLoopRampRate(.2);
    
    Blinken.set(-.89);
    
@@ -288,14 +293,14 @@ if (autobalancesbutton == true){
  SmartDashboard.putBoolean("stop auto?", stopauto);
  SmartDashboard.getBoolean("stop auto?", false);
 
- if (txt<.3
- && txt>-3
+ if (txt< 2.8
+ && txt>-2.8
 && tat != 0
 && (m_index == 1|| m_index == 0)){
 Blinken.set(.57);
 }else{
- if (txb<.3
-     && txb>-3
+ if (txb<2.8
+     && txb>-2.8
     && tab != 0
     && (m_index == 4|| m_index == 5)){
   Blinken.set(.57);
@@ -595,6 +600,7 @@ SmartDashboard.putNumber("autonnumber", p);
   }
   else {
     stickDeadband = 0.05;
+
   }*/
 
  brakSolenoid.set(true);
@@ -638,7 +644,7 @@ if (homingstep == 4){
 //5
 if (homingstep == 5){
   m_Telescope.set(0);
-  m_Telescope.setSelectedSensorPosition(0);
+  m_Telescope.setSelectedSensorPosition(-5);
   m_telescopehome = 1;
   homingstep = 6;
 }
@@ -654,7 +660,7 @@ if (homingstep == 5){
   if (homingstep == 10){
   //manual  
   m_telescopehome = 0;
-  telescopemanual = (((m_Driver2.getLeftTriggerAxis() + (-1 * m_Driver2.getRightTriggerAxis())) * .8)+.05);
+  telescopemanual = (((m_Driver2.getLeftTriggerAxis() + (-1 * m_Driver2.getRightTriggerAxis())) * .5)+.05);
   m_Telescope.set(ControlMode.PercentOutput,telescopemanual);
   }
 
@@ -699,18 +705,28 @@ if (m_Driver2.getRightBumperPressed()){
 } 
 
 
-
 if (m_timer.get() > .6 && m_timer.get() < .65) {
   // Drive forwards half speed, make sure to turn input squaring off
   extenedTelescope = false;
 }
 
-if (m_Flight.getRawButton(9)) {
-  //mrflippySolenoid.set(true);
-} 
-  else {
+
+
+//mr flippy
+if (m_Flight.getRawButton(9) && m_Driver2.getRawButton(9)) {
+  if (mrflippystate) {
+     // Current state is true so turn off
+     mrflippystate = false;
+     mrflippySolenoid.set(true);
+     mrflippySolenoidinvesre.set(false);
+  } else {
+     // Current state is false so turn on
+    mrflippystate = true;
     mrflippySolenoid.set(false);
-  } 
+    mrflippySolenoidinvesre.set(true);
+  }
+}
+
 
 
 //telescope arm
@@ -733,15 +749,16 @@ if (m_Driver2.getXButtonPressed() ) {
 if(extenedTelescope){
   telescopecommandposition = kTelescopearray[m_index];
   }else {
-    telescopecommandposition = 0.0;
+
+    telescopecommandposition = -10.0;
   }
 
  if (Math.abs(kSetpointsMeters[m_index]-m_potentiometer.get())>.4){
     extenedTelescope = false;
     telescopecommandposition = 0.0;
  }
-
-
+ SmartDashboard.putNumber("arm error",(Math.abs(kSetpointsMeters[m_index]-m_potentiometer.get())));
+ SmartDashboard.putNumber("arm command position",kSetpointsMeters[m_index]);
 
  //SmartDashboard.putNumber("arm position", m_potentiometer.get());
  SmartDashboard.putNumber("homing step", homingstep);
@@ -773,15 +790,16 @@ if(extenedTelescope){
   // Run the PID Controller
   double pidOut = m_armpidController.calculate(position);
   
-if(!isarminmanuel){
+if(!isarminmanuel /*&& m_Telescope.getSelectedSensorPosition()!=0*/){
 m_armpidController.setSetpoint(kSetpointsMeters[m_index]);
 m_rotate.set(pidOut);}
-else { if(m_Driver2.getLeftY() <.1 && m_Driver2.getLeftY() > -.1){
+else { if(m_Driver2.getLeftY() <.05 && m_Driver2.getLeftY() > -.05){
   m_rotate.set(0);
 }else
-m_rotate.set((m_Driver2.getLeftY()*1));
+m_rotate.set((m_Driver2.getLeftY()*.6));
 }
-
+SmartDashboard.putNumber("telescope encoder", m_Telescope.getSelectedSensorPosition());
+SmartDashboard.putBoolean("arm in manual", isarminmanuel);
 telescopeencoderpos = m_Telescope.getSelectedSensorPosition();
 // home
 if(m_Driver2.getBButtonPressed()){
