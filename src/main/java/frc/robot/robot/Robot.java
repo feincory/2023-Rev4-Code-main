@@ -59,6 +59,7 @@ import edu.wpi.first.wpilibj.Timer;
 public class Robot extends TimedRobot {
   public static CTREConfigs ctreConfigs;
   private final Timer m_timer = new Timer();
+  private final Timer autoTimer = new Timer();
    // Joysticks
   private final Joystick m_Flight = new Joystick(0);
   private final static XboxController m_Driver2 = new XboxController(1);
@@ -88,7 +89,11 @@ private PWMSparkMax Blinken = new PWMSparkMax(0); // and blinkin replaced with "
 
  //Digital Inputs
 public DigitalInput armhomingswitch = new DigitalInput(0);
-public DigitalInput armhomingswitchbase = new DigitalInput(1);
+public DigitalInput cubesensor = new DigitalInput(1);
+public DigitalInput armhomingswitchbase = new DigitalInput(9);
+public boolean cubeaquired;
+
+
  //Intake
 private static final int IntakeDeviceID = 23;
 private CANSparkMax m_IntakeMotor;
@@ -123,11 +128,14 @@ private boolean telescopesafe;
 //Arm Rotation Stuff
 static final int kPotChannel = 0;  
 static final double kFullHeightMeters = 5;
-static final double[] kSetpointsMeters = {1.45,1.60,2.85,2.95,4.25,4.39};
+static final double[] kSetpointsMeters = {1.45,1.60,2.85,2.98,4.25,4.39};
 //{1.45,1.53,2.1,2.85,2.98,3.55,4.25,4.39}
 private static final double kPa = 1.7;
 private static final double kIa = 0.0;
 private static final double kDa = 0.0;
+public double armoffsetamount = .025;
+public double armwithoffset;
+
 
 public final PIDController m_armpidController = new PIDController(kPa,kIa, kDa);  
 private final AnalogPotentiometer m_potentiometer = 
@@ -273,9 +281,9 @@ private RobotContainer m_robotContainer;
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    double txb = LimelightHelpers.getTX("limelight-bottom");
+    double tyb = LimelightHelpers.getTY("limelight-bottom");
     double tab = LimelightHelpers.getTA("limelight-bottom");
-    double txt = LimelightHelpers.getTX("limelight-top");
+    double tyt = LimelightHelpers.getTY("limelight-top");
     double tat = LimelightHelpers.getTA("limelight-top");
 //autobalance logic
 gyropitch = Swerve.gyro.getRoll();
@@ -293,14 +301,14 @@ if (autobalancesbutton == true){
  SmartDashboard.putBoolean("stop auto?", stopauto);
  SmartDashboard.getBoolean("stop auto?", false);
 
- if (txt< 2.8
- && txt>-2.8
+ if (tyt< -.25
+ && tyt>-5.25
 && tat != 0
 && (m_index == 1|| m_index == 0)){
 Blinken.set(.57);
 }else{
- if (txb<2.8
-     && txb>-2.8
+ if (tyb<1.39
+     && tyb>-3.61
     && tab != 0
     && (m_index == 4|| m_index == 5)){
   Blinken.set(.57);
@@ -357,7 +365,8 @@ Blinken.set(.57);
     m_DBFR = m_robotContainer.getDBFR();
     homingstep = 0;
     m_telescopehome = 0;
-    
+    cubeaquired = false;
+
     // schedule the autonomous command (example)
     /*if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -377,8 +386,8 @@ Blinken.set(.57);
     //1
     if (homingstep == 1 
       && !armhomingswitchbase.get() 
-      && (m_potentiometer.get()>3.1) 
-      && (m_potentiometer.get()< 3.6))
+      && (m_potentiometer.get()+armoffsetamount>3.1) 
+      && (m_potentiometer.get()+armoffsetamount< 3.6))
       {
       homingstep = 2;}
       else if (homingstep == 1){homingstep = 2;
@@ -432,7 +441,7 @@ Blinken.set(.57);
  * drop*/
 
  autonnumber = SmartDashboard.getNumber("auto selection", 0);
- double position = m_potentiometer.get(); 
+ double position = m_potentiometer.get()+armoffsetamount; 
  double pidOut = m_armpidController.calculate(position); 
 if(m_telescopehome == 1){
   m_armpidController.setSetpoint(kSetpointsMeters[m_index]);
@@ -442,7 +451,7 @@ if(m_telescopehome == 1){
   autostep = 1;
  }
 // Run the PID Controller
-SmartDashboard.putNumber("autonnumber", p);
+
 
  
  if (autostep == 1 && m_telescopehome==1){
@@ -451,7 +460,7 @@ SmartDashboard.putNumber("autonnumber", p);
 
  if (autostep == 2 ){
   m_index = 5;
-  if((Math.abs(kSetpointsMeters[5]-position))<.15){autostep=3;
+  if((Math.abs(kSetpointsMeters[5]-position))<.75){autostep=3;
   }
 }
   if (autostep == 3){
@@ -462,7 +471,8 @@ SmartDashboard.putNumber("autonnumber", p);
     autostep = 4;
    }
 
-  if (autostep == 4 && m_Telescope.getSelectedSensorPosition()<-44000){
+   //was <-44000
+  if (autostep == 4 && m_Telescope.getSelectedSensorPosition()<-40000){
     m_index = 5;
     autostep = 5;
    }
@@ -470,7 +480,7 @@ SmartDashboard.putNumber("autonnumber", p);
    if (autostep == 5){
     m_index = 5;
     m_gripperSolenoid.set(true);
-    Timer.delay(.7);
+    Timer.delay(.3);
     autostep = 6;
    }
    
@@ -480,65 +490,94 @@ SmartDashboard.putNumber("autonnumber", p);
     m_Telescope.set(ControlMode.Position,0);
     autostep = 7;
    }
-   if (autostep == 7 && m_Telescope.getSelectedSensorPosition()>-1000){
-    m_index = 5;
+   if (autostep == 7 && m_Telescope.getSelectedSensorPosition()>-35000){
+    //m_index = 3;
     m_gripperSolenoid.set(true);
     m_Telescope.set(ControlMode.Position,0);    
     autostep = 8;
    }
 
    if (autostep == 8){
-    m_index = 3;
+    //m_index = 3;
     m_Telescope.set(ControlMode.Position,0);    
     autostep = 9;
    }
 
-   if (autostep == 9 && (Math.abs(kSetpointsMeters[3]-position))<.15){
-    m_IntakeMotor.set(-.45);
+   if (autostep == 9 /*&& (Math.abs(kSetpointsMeters[3]-position))<.15*/){
+    m_IntakeMotor.set(-.65);
     m_IntakeSolenoid.set(true);
     autostep = 10;
+    autoTimer.restart();
    }
  
     
     if (autostep == 10){
     if (m_autonomousCommand != null) {
-      //m_autonomousCommand.schedule();//2 game piece auto
+      //m_index = 3;
+      m_autonomousCommand.schedule();//2 game piece auto
       //m_DBFL.schedule();//drive balance from left side
       //m_DBFR.schedule();//drive balance from right side
-      m_Prightside.schedule();
+      //m_Prightside.schedule();
       autostep = 11;
+      
     }}
+    if (autostep == 11 && autoTimer.get()>.5) {
+      m_index = 3;      
+    }
 
-    if (autostep == 11 && !m_Prightside.isScheduled()){
+    /*if (autostep == 11 && !cubeaquired && (Math.abs(kSetpointsMeters[2]-position))<.25){
+      m_Telescope.set(ControlMode.Position,kTelescopearray[2]);
+      m_gripperSolenoid.set(true);
+    }
+
+      if (autostep == 11 && !cubesensor.get()){
+        //m_Telescope.set(ControlMode.Position,0);
+        m_gripperSolenoid.set(false);
+        autoTimer.restart();
+        m_IntakeSolenoid.set(false);
+        cubeaquired = true;
+      }
+      if (autostep == 11 && cubeaquired && autoTimer.get()>.3){
+        m_Telescope.set(ControlMode.Position,0);
+        cubeaquired = true;
+        m_IntakeMotor.set(0);
+      }
+      if (autostep == 11 && m_Telescope.getSelectedSensorPosition()>-1000 && cubeaquired){
+        m_index = 2; 
+      }*/
+    if (autostep == 11 && !m_autonomousCommand.isScheduled()){
+      m_Telescope.set(ControlMode.Position,-12000);
       autostep = 12;
     } 
+     
     
     if (autostep == 12){
-      m_Telescope.set(ControlMode.Position,kTelescopearray[3]);
+      m_Telescope.set(ControlMode.Position,-12000);
       m_IntakeSolenoid.set(false);
       autostep = 13;
        }
-    if (autostep == 13 && m_Telescope.getSelectedSensorPosition()<-13000 ){
+    if (autostep == 13 && m_Telescope.getSelectedSensorPosition()<-9000 ){
       m_gripperSolenoid.set(false);
-      Timer.delay(.5);
+      autoTimer.restart();
       autostep = 14;
-      m_IntakeMotor.set(0);
+      
        }
 
-    if (autostep == 14){
+    if (autostep == 14 && autoTimer.get()>.3){
       m_Telescope.set(ControlMode.Position,0);
+      m_IntakeMotor.set(0);
       autostep = 15;
        }   
 
-   if (autostep == 15 && m_Telescope.getSelectedSensorPosition()>-1000){
+   if (autostep == 15 && m_Telescope.getSelectedSensorPosition()>-2000){
     m_index = 5; 
-    if((Math.abs(kSetpointsMeters[5]-position))<.15){
-    //autostep=16;
+    if((Math.abs(kSetpointsMeters[5]-position))<.75){
+    autostep=16;
     }
    } 
 
    if (autostep == 16 ){
-    //m_Telescope.set(ControlMode.Position,kTelescopearray[5]);
+    m_Telescope.set(ControlMode.Position,kTelescopearray[5]);
      m_index = 5;
      autostep = 17;
     }
@@ -546,17 +585,18 @@ SmartDashboard.putNumber("autonnumber", p);
   if (autostep == 17){
     m_Telescope.set(ControlMode.Position,kTelescopearray[5]);
      m_index = 5;
+     
      autostep = 18;
     }
     
     if (autostep == 18 && m_Telescope.getSelectedSensorPosition()<-44000){
       m_index = 5;
       m_gripperSolenoid.set(true);
-      Timer.delay(.7);
       autostep = 19;
+      autoTimer.restart();
      }
      
-     if (autostep == 19){
+     if (autostep == 19 && autoTimer.get()>.75){
       m_index = 5;
       m_gripperSolenoid.set(true);
       m_Telescope.set(ControlMode.Position,0);
@@ -576,13 +616,16 @@ SmartDashboard.putNumber("autonnumber", p);
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
       }
+
     isarminmanuel = true;
     homingstep = 0;
     m_telescopehome = 0;
     m_index = 3;
+    mrflippystate = false;
+
    // s_swerve.resetModulesToAbsolute();
   }
-
+  
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
@@ -613,8 +656,8 @@ if (homingstep == 0){
 //1
 if (homingstep == 1 
   && !armhomingswitchbase.get() 
-  && (m_potentiometer.get()>3.1) 
-  && (m_potentiometer.get()< 3.6))
+  && (m_potentiometer.get()+armoffsetamount>3.1) 
+  && (m_potentiometer.get()+armoffsetamount< 3.6))
   {
   homingstep = 2;}
   else if (homingstep == 1){homingstep = 2;
@@ -712,8 +755,10 @@ if (m_timer.get() > .6 && m_timer.get() < .65) {
 
 
 
+
+
 //mr flippy
-if (m_Flight.getRawButton(9) && m_Driver2.getRawButton(9)) {
+if (m_Flight.getRawButtonPressed(15) && m_Driver2.getRawButton(9)) {
   if (mrflippystate) {
      // Current state is true so turn off
      mrflippystate = false;
@@ -753,11 +798,11 @@ if(extenedTelescope){
     telescopecommandposition = -10.0;
   }
 
- if (Math.abs(kSetpointsMeters[m_index]-m_potentiometer.get())>.4){
+ if (Math.abs(kSetpointsMeters[m_index]-m_potentiometer.get()+armoffsetamount)>.4){
     extenedTelescope = false;
     telescopecommandposition = 0.0;
  }
- SmartDashboard.putNumber("arm error",(Math.abs(kSetpointsMeters[m_index]-m_potentiometer.get())));
+ SmartDashboard.putNumber("arm error",(Math.abs(kSetpointsMeters[m_index]-m_potentiometer.get()+armoffsetamount)));
  SmartDashboard.putNumber("arm command position",kSetpointsMeters[m_index]);
 
  //SmartDashboard.putNumber("arm position", m_potentiometer.get());
@@ -785,7 +830,7 @@ if(extenedTelescope){
   }
 
 
-  double position = m_potentiometer.get();
+  double position = m_potentiometer.get()+armoffsetamount;
 
   // Run the PID Controller
   double pidOut = m_armpidController.calculate(position);

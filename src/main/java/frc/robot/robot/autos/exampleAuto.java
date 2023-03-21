@@ -19,9 +19,7 @@ import frc.robot.robot.subsystems.Swerve;
 public class exampleAuto extends SequentialCommandGroup {
     public exampleAuto(Swerve s_Swerve){
         TrajectoryConfig config =
-            new TrajectoryConfig(
-                    Constants.AutoConstants.kMaxSpeedMetersPerSecond,
-                    Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+            new TrajectoryConfig(4.5, 4)
                 .setKinematics(Constants.Swerve.swerveKinematics);
 
         // An example trajectory to follow.  All units in meters.
@@ -32,7 +30,7 @@ public class exampleAuto extends SequentialCommandGroup {
                 // Pass through these two interior waypoints, making an 's' curve path
                 List.of(new Translation2d(4.5, -.5),new Translation2d(4.5, -.51)),
                 // End 3 meters straight ahead of where we started, facing forward
-                new Pose2d(-.2, -.7, new Rotation2d(0)),
+                new Pose2d(-.6, -.7, new Rotation2d(0)),
                 config);
 
         var thetaController =
