@@ -80,6 +80,7 @@ public class Robot extends TimedRobot {
  public static double autobalancespeed;
  public static boolean autobalancesbutton;
  public double gyropitch;
+ public static boolean autonautobalance;
 
 
 // Analog Input
@@ -160,6 +161,7 @@ private Command m_DBFR;
 private Command m_Prightside;
 private RobotContainer m_robotContainer;
 
+
 /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -208,7 +210,7 @@ private RobotContainer m_robotContainer;
   autobalancespeed = 0;
    autobalancesbutton = false;
    gyropitch = 0;
-    
+   autonautobalance = false; 
   m_robotContainer = new RobotContainer(); 
  
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
@@ -217,8 +219,9 @@ private RobotContainer m_robotContainer;
     SendableChooser<Command> m_chooser = new SendableChooser<>();
     m_chooser.setDefaultOption("Simple Auto", m_autonomousCommand);
    m_chooser.addOption("Complex Auto", m_autonomousCommand);
-
    Shuffleboard.getTab("Autonomous").add(m_chooser);
+
+  
     //motors
    m_IntakeMotor = new CANSparkMax(IntakeDeviceID, MotorType.kBrushed);
    reverseintake = false;
@@ -288,14 +291,15 @@ private RobotContainer m_robotContainer;
 //autobalance logic
 gyropitch = Swerve.gyro.getRoll();
 autobalancesbutton = m_Flight.getRawButton(13);
-if (autobalancesbutton == true){
+if (autobalancesbutton == true || autonautobalance ==true){
  
- 
-    if(gyropitch < -12){
+ autobalancespeed = 0-gyropitch*.055;
+   /* if(gyropitch < -12){
       autobalancespeed = .55;
     }else if(gyropitch > 12){
       autobalancespeed = -.55;}
-}
+*/
+    }
  SmartDashboard.putNumber("gyro pitch", gyropitch);
  SmartDashboard.putBoolean("autobalance button", autobalancesbutton);
  SmartDashboard.putBoolean("stop auto?", stopauto);
@@ -504,20 +508,20 @@ if(m_telescopehome == 1){
    }
 
    if (autostep == 9 /*&& (Math.abs(kSetpointsMeters[3]-position))<.15*/){
-    m_IntakeMotor.set(-.65);
-    m_IntakeSolenoid.set(true);
+    //m_IntakeMotor.set(-.65);
+    //m_IntakeSolenoid.set(true);
     autostep = 10;
     autoTimer.restart();
    }
  
     
     if (autostep == 10){
-    if (m_autonomousCommand != null) {
+    if (m_Prightside != null) {
       //m_index = 3;
-      m_autonomousCommand.schedule();//2 game piece auto
-      //m_DBFL.schedule();//drive balance from left side
+      //m_DBFL.schedule();//2 game piece auto
+      m_DBFL.schedule();//drive balance from left side
       //m_DBFR.schedule();//drive balance from right side
-      //m_Prightside.schedule();
+      //m_Prightside.schedule();// right side 2 game piece
       autostep = 11;
       
     }}
@@ -525,29 +529,11 @@ if(m_telescopehome == 1){
       m_index = 3;      
     }
 
-    /*if (autostep == 11 && !cubeaquired && (Math.abs(kSetpointsMeters[2]-position))<.25){
-      m_Telescope.set(ControlMode.Position,kTelescopearray[2]);
-      m_gripperSolenoid.set(true);
-    }
 
-      if (autostep == 11 && !cubesensor.get()){
-        //m_Telescope.set(ControlMode.Position,0);
-        m_gripperSolenoid.set(false);
-        autoTimer.restart();
-        m_IntakeSolenoid.set(false);
-        cubeaquired = true;
-      }
-      if (autostep == 11 && cubeaquired && autoTimer.get()>.3){
-        m_Telescope.set(ControlMode.Position,0);
-        cubeaquired = true;
-        m_IntakeMotor.set(0);
-      }
-      if (autostep == 11 && m_Telescope.getSelectedSensorPosition()>-1000 && cubeaquired){
-        m_index = 2; 
-      }*/
-    if (autostep == 11 && !m_autonomousCommand.isScheduled()){
-      m_Telescope.set(ControlMode.Position,-12000);
-      autostep = 12;
+    if (autostep == 11 && !m_DBFL.isScheduled()){
+      //m_Telescope.set(ControlMode.Position,-12000);
+      //autostep = 12;
+      autostep = 30;
     } 
      
     
@@ -602,6 +588,10 @@ if(m_telescopehome == 1){
       m_Telescope.set(ControlMode.Position,0);
      }
    
+     if (autostep == 30){
+      autonautobalance = true;
+      autostep = 30;
+    } 
    
    SmartDashboard.putNumber("autostep", autostep);
 
@@ -622,6 +612,7 @@ if(m_telescopehome == 1){
     m_telescopehome = 0;
     m_index = 3;
     mrflippystate = false;
+    autonautobalance = false;
 
    // s_swerve.resetModulesToAbsolute();
   }
@@ -645,7 +636,6 @@ if(m_telescopehome == 1){
     stickDeadband = 0.05;
 
   }*/
-
  brakSolenoid.set(true);
  //SmartDashboard.putNumber("telescope encoder", m_Telescope.getSelectedSensorPosition());
 //0
@@ -866,12 +856,12 @@ telescopesafe = true;
 
     if (m_Flight.getRawButton(kSolenoidButton)) {
       if(reverseintake){
-        m_IntakeMotor.set(.5);
+        m_IntakeMotor.set(.6);
         Blinken.set(-.31);
         m_Driver2.setRumble(RumbleType.kBothRumble, 1);
         //m_convayor.set(((1+m_Flight.getRawAxis(6))/2));
       }else{
-      m_IntakeMotor.set(-.55); 
+      m_IntakeMotor.set(-.65); 
       Blinken.set(-.89);
       m_Driver2.setRumble(RumbleType.kBothRumble, 0);
       //m_IntakeMotor.set(-((1+m_Flight.getRawAxis(6))/2)); 

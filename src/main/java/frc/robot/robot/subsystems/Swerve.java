@@ -47,7 +47,7 @@ public class Swerve extends SubsystemBase {
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates;
-        if(Robot.autobalancesbutton){
+        if(Robot.autobalancesbutton || Robot.autonautobalance){
             swerveModuleStates = 
             Constants.Swerve.swerveKinematics.toSwerveModuleStates(
                ChassisSpeeds.fromFieldRelativeSpeeds(
