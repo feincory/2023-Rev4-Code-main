@@ -67,7 +67,7 @@ public class Robot extends TimedRobot {
 
   // solenoids
   private final Solenoid m_IntakeSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 1);
-  private Solenoid m_gripperSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 6);
+  private Solenoid m_gripperSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 0);
   private final Solenoid mrflippySolenoid = new  Solenoid(31, PneumaticsModuleType.REVPH, 4 );
   private final Solenoid mrflippySolenoidinvesre = new  Solenoid(31, PneumaticsModuleType.REVPH, 5 );
   public static boolean mrflippystate;
@@ -108,7 +108,9 @@ private WPI_TalonSRX m_Telescope;
 //Rotate Motor
 private static final int RotateID = 24;
 private CANSparkMax m_rotate;
-
+private boolean dropbutton;
+private double dropamount;
+private double adjustiedposition;
  // Controller
 private static final int kSolenoidButton = 12;
 // Telescope Stuff
@@ -295,10 +297,10 @@ private RobotContainer m_robotContainer;
     double tat = LimelightHelpers.getTA("limelight-top");
 //autobalance logic
 gyropitch = Swerve.gyro.getRoll();
-autobalancesbutton = m_Flight.getRawButton(13);
+//autobalancesbutton = m_Flight.getRawButton(13);
 if (autobalancesbutton == true || autonautobalance ==true){
  
- autobalancespeed = 0-gyropitch*.048;
+ autobalancespeed = 0-gyropitch*.041;
    /* if(gyropitch < -12){
       autobalancespeed = .55;
     }else if(gyropitch > 12){
@@ -449,9 +451,21 @@ Blinken.set(.57);
  * extend
  * limelight drive in
  * drop*/
+if(m_index == 0 || m_index == 1){
+  dropamount =-.1;
+}
+if(m_index == 5 || m_index == 4){
+  dropamount =.1;
+}
 
- double position = m_potentiometer.get()+armoffsetamount; 
- double pidOut = m_armpidController.calculate(position); 
+if(m_Flight.getRawButton(13)){
+ adjustiedposition = m_potentiometer.get()+armoffsetamount+dropamount; 
+}else{
+  adjustiedposition = m_potentiometer.get()+armoffsetamount; 
+}
+
+ double position = adjustiedposition; 
+double pidOut = m_armpidController.calculate(position); 
 if(m_telescopehome == 1){
   m_armpidController.setSetpoint(kSetpointsMeters[m_index]);
   m_rotate.set(pidOut);
@@ -514,7 +528,7 @@ if(m_telescopehome == 1){
    }
 
    if(autostep == 9 && (autonnumber == 1 || autonnumber ==3)){
-    m_IntakeMotor.set(-.65);
+    m_IntakeMotor.set(-.6);
     m_IntakeSolenoid.set(true); 
    }
 
@@ -830,9 +844,22 @@ if(extenedTelescope){
  isarminmanuel = true;
  }else {isarminmanuel = false;
   }
+  if(m_index == 0 || m_index == 1){
+    dropamount =-.1;
+  }
+  if(m_index == 5 || m_index == 4){
+    dropamount =.1;
+  }
+  
+  if(m_Flight.getRawButton(13)){
+   adjustiedposition = m_potentiometer.get()+armoffsetamount+dropamount; 
+  }else{
+    adjustiedposition = m_potentiometer.get()+armoffsetamount; 
+  }
+  
+   double position = adjustiedposition; 
 
-
-  double position = m_potentiometer.get()+armoffsetamount;
+  //double position = m_potentiometer.get()+armoffsetamount;
 
   // Run the PID Controller
   double pidOut = m_armpidController.calculate(position);
@@ -873,7 +900,7 @@ telescopesafe = true;
         m_Driver2.setRumble(RumbleType.kBothRumble, 1);
         //m_convayor.set(((1+m_Flight.getRawAxis(6))/2));
       }else{
-      m_IntakeMotor.set(-.65); 
+      m_IntakeMotor.set(-.58); 
       Blinken.set(-.89);
       m_Driver2.setRumble(RumbleType.kBothRumble, 0);
       //m_IntakeMotor.set(-((1+m_Flight.getRawAxis(6))/2)); 
