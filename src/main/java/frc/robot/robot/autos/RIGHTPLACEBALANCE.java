@@ -20,8 +20,7 @@ public class RIGHTPLACEBALANCE extends SequentialCommandGroup {
     public RIGHTPLACEBALANCE(Swerve s_Swerve){
         TrajectoryConfig config =
             new TrajectoryConfig(
-                    Constants.AutoConstants.kMaxSpeedMetersPerSecond,
-                    Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+                    2.5,2)
                 .setKinematics(Constants.Swerve.swerveKinematics);
 
         // An example trajectory to follow.  All units in meters.

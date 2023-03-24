@@ -16,8 +16,8 @@ import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.robot.Constants;
 import frc.robot.robot.subsystems.Swerve;
 
-public class exampleAuto extends SequentialCommandGroup {
-    public exampleAuto(Swerve s_Swerve){
+public class LEFT2PIECE extends SequentialCommandGroup {
+    public LEFT2PIECE(Swerve s_Swerve){
         TrajectoryConfig config =
             new TrajectoryConfig(4.5, 4)
                 .setKinematics(Constants.Swerve.swerveKinematics);

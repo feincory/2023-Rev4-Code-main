@@ -67,7 +67,7 @@ public class Robot extends TimedRobot {
 
   // solenoids
   private final Solenoid m_IntakeSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 1);
-  private Solenoid m_gripperSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 0);
+  private Solenoid m_gripperSolenoid = new Solenoid(31,PneumaticsModuleType.REVPH, 6);
   private final Solenoid mrflippySolenoid = new  Solenoid(31, PneumaticsModuleType.REVPH, 4 );
   private final Solenoid mrflippySolenoidinvesre = new  Solenoid(31, PneumaticsModuleType.REVPH, 5 );
   public static boolean mrflippystate;
@@ -119,7 +119,7 @@ public int m_telescopehome;
 public double telescopeencoderpos;
 public int homingstep;
 public Double telescopecommandposition;
-static final double[] kTelescopearray = {-45000,-23000,-13500,-13500,-23000,-45000};
+static final double[] kTelescopearray = {-45000,-23000,-13300,-13300,-23000,-45000};
 public double stickDeadband;
 //{-45000,-23000,-22000,-14000,-14000,-22000,-23000,-45000}
 private boolean extenedTelescope;
@@ -134,7 +134,7 @@ static final double[] kSetpointsMeters = {1.45,1.60,2.87,2.98,4.25,4.39};
 private static final double kPa = 1.7;
 private static final double kIa = 0.0;
 private static final double kDa = 0.0;
-public double armoffsetamount = .1;//was at .025
+public double armoffsetamount = .14;//was at .025
 public double armwithoffset;
 public boolean armhigh;
 public boolean armmid;
@@ -298,7 +298,7 @@ gyropitch = Swerve.gyro.getRoll();
 autobalancesbutton = m_Flight.getRawButton(13);
 if (autobalancesbutton == true || autonautobalance ==true){
  
- autobalancespeed = 0-gyropitch*.055;
+ autobalancespeed = 0-gyropitch*.048;
    /* if(gyropitch < -12){
       autobalancespeed = .55;
     }else if(gyropitch > 12){
@@ -513,16 +513,18 @@ if(m_telescopehome == 1){
     autostep = 9;
    }
 
+   if(autostep == 9 && (autonnumber == 1 || autonnumber ==3)){
+    m_IntakeMotor.set(-.65);
+    m_IntakeSolenoid.set(true); 
+   }
+
    if (autostep == 9){
     autostep = 10;
     m_index = 3;
     autoTimer.restart();
    }
 
-   if(autostep == 9 && (autonnumber == 1 || autonnumber ==3)){
-    m_IntakeMotor.set(-.65);
-    m_IntakeSolenoid.set(true); 
-   }
+
      
     if (autostep == 10){
     if (m_CENTERAUTO != null) {if (autonnumber == 0){m_CENTERAUTO.schedule();}autostep = 11;}
@@ -532,14 +534,16 @@ if(m_telescopehome == 1){
     if (m_LEFTPLACEBALANCE != null){if (autonnumber == 4){m_LEFTPLACEBALANCE.schedule();}autostep = 11;}
     }
     if (autostep == 11 && autoTimer.get()>.5) {
-      m_index = 3;      
+      m_index = 3;
+          
     }
 
-    if (autostep == 11 && !m_CENTERAUTO.isScheduled()){autostep = 30;}
-    if (autostep == 11 && !m_RIGHT2PIECE.isScheduled()){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);}
-    if (autostep == 11 && !m_RIGHTPLACEBALANCE.isScheduled()){autostep = 30;}
-    if (autostep == 11 && !m_LEFT2PIECE.isScheduled()){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);}  
-    if (autostep == 11 && !m_LEFTPLACEBALANCE.isScheduled()){autostep = 30;}  
+
+    if (autostep == 11 && !m_CENTERAUTO.isScheduled()&&autonnumber==0){autostep = 30;}
+    if (autostep == 11 && !m_RIGHT2PIECE.isScheduled()&&autonnumber==1){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);}
+    if (autostep == 11 && !m_RIGHTPLACEBALANCE.isScheduled()&&autonnumber==2){autostep = 30;}
+    if (autostep == 11 && !m_LEFT2PIECE.isScheduled()&&autonnumber==3){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);}  
+    if (autostep == 11 && !m_LEFTPLACEBALANCE.isScheduled()&&autonnumber==4){autostep = 30;}  
     
     
     if (autostep == 12){
@@ -609,11 +613,11 @@ if(m_telescopehome == 1){
     // continue until interrupted by another command, remove
     // this line or comment it out.
 
-    m_CENTERAUTO.cancel();
+    /*m_CENTERAUTO.cancel();
     m_LEFT2PIECE.cancel();
     m_LEFTPLACEBALANCE.cancel();
     m_RIGHT2PIECE.cancel();
-    m_RIGHTPLACEBALANCE.cancel();
+    m_RIGHTPLACEBALANCE.cancel();*/
 
     isarminmanuel = true;
     homingstep = 0;

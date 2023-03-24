@@ -16,9 +16,9 @@ import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.robot.Constants;
 import frc.robot.robot.subsystems.Swerve;
 
-public class DBFL extends SequentialCommandGroup {
+public class LEFTPLACEBALANCE extends SequentialCommandGroup {
 
-    public DBFL(Swerve s_Swerve){
+    public LEFTPLACEBALANCE(Swerve s_Swerve){
         TrajectoryConfig config =
             new TrajectoryConfig(
                     2.5,2)

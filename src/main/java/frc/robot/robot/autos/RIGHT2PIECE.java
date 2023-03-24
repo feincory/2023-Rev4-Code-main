@@ -20,8 +20,7 @@ public class RIGHT2PIECE extends SequentialCommandGroup {
     public RIGHT2PIECE(Swerve s_Swerve){
         TrajectoryConfig config =
             new TrajectoryConfig(
-                    Constants.AutoConstants.kMaxSpeedMetersPerSecond,
-                    Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+                    4.5,4)
                 .setKinematics(Constants.Swerve.swerveKinematics);
 
         // An example trajectory to follow.  All units in meters.
