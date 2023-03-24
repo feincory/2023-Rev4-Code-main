@@ -16,8 +16,8 @@ import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.robot.Constants;
 import frc.robot.robot.subsystems.Swerve;
 
-public class DBFR extends SequentialCommandGroup {
-    public DBFR(Swerve s_Swerve){
+public class RIGHTPLACEBALANCE extends SequentialCommandGroup {
+    public RIGHTPLACEBALANCE(Swerve s_Swerve){
         TrajectoryConfig config =
             new TrajectoryConfig(
                     Constants.AutoConstants.kMaxSpeedMetersPerSecond,
@@ -30,9 +30,9 @@ public class DBFR extends SequentialCommandGroup {
                 // Start at the origin facing the +X direction
                 new Pose2d(0, 0, new Rotation2d(0)),
                 // Pass through these two interior waypoints, making an 's' curve path
-                List.of(new Translation2d(4.5, .5),new Translation2d(4.5, 1.8), new Translation2d(.9, 2.3)),
+                List.of(new Translation2d(4, .5),new Translation2d(4, 1.8)),
                 // End 3 meters straight ahead of where we started, facing forward
-                new Pose2d(.9, 2.4, new Rotation2d(0)),
+                new Pose2d(1.0, 2.3, new Rotation2d(0)),
                 config);
 
         var thetaController =

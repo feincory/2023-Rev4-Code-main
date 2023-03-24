@@ -20,33 +20,33 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
+//import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 //import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+//import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import com.revrobotics.CANSparkMax;
 //import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.RelativeEncoder;
+//import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.IdleMode;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+//import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import frc.robot.robot.subsystems.Swerve;
-import pabeles.concurrency.ConcurrencyOps.NewInstance;
-import frc.robot.robot.Constants;
-import java.sql.Time;
+//import pabeles.concurrency.ConcurrencyOps.NewInstance;
+//import frc.robot.robot.Constants;
+//import java.sql.Time;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.sensors.Pigeon2;
+//import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 //import edu.wpi.first.wpilibj.Timer;
@@ -71,8 +71,7 @@ public class Robot extends TimedRobot {
   private final Solenoid mrflippySolenoid = new  Solenoid(31, PneumaticsModuleType.REVPH, 4 );
   private final Solenoid mrflippySolenoidinvesre = new  Solenoid(31, PneumaticsModuleType.REVPH, 5 );
   public static boolean mrflippystate;
-  private final Solenoid brakSolenoid = new Solenoid(31,
-  PneumaticsModuleType.REVPH, 3 ); // you madmen wrote the WHOLE CODE with a misspelling of "break?!?!?!?!?"
+  private final Solenoid brakSolenoid = new Solenoid(31, PneumaticsModuleType.REVPH, 3 ); // you madmen wrote the WHOLE CODE with a misspelling of "break?!?!?!?!?"
  // Motors
 
  
