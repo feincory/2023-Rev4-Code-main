@@ -40,6 +40,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import frc.robot.robot.subsystems.Swerve;
+import pabeles.concurrency.ConcurrencyOps.NewInstance;
 import frc.robot.robot.Constants;
 import java.sql.Time;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -48,7 +49,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.Timer;
+//import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -113,7 +114,7 @@ private CANSparkMax m_rotate;
 private static final int kSolenoidButton = 12;
 // Telescope Stuff
 public SparkMaxPIDController m_pidController;
-private RelativeEncoder m_encoder;
+//private RelativeEncoder m_encoder;
 public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput;
 public int m_telescopehome;
 public double telescopeencoderpos;
@@ -129,14 +130,18 @@ private boolean telescopesafe;
 //Arm Rotation Stuff
 static final int kPotChannel = 0;  
 static final double kFullHeightMeters = 5;
-static final double[] kSetpointsMeters = {1.45,1.60,2.85,2.98,4.25,4.39};
+static final double[] kSetpointsMeters = {1.45,1.60,2.87,2.98,4.25,4.39};
 //{1.45,1.53,2.1,2.85,2.98,3.55,4.25,4.39}
 private static final double kPa = 1.7;
 private static final double kIa = 0.0;
 private static final double kDa = 0.0;
-public double armoffsetamount = .025;
+public double armoffsetamount = .1;//was at .025
 public double armwithoffset;
-
+public boolean armhigh;
+public boolean armmid;
+public boolean armlow;
+public boolean armrotated;
+SendableChooser<Integer> m_numChooser = new SendableChooser<>();
 
 public final PIDController m_armpidController = new PIDController(kPa,kIa, kDa);  
 private final AnalogPotentiometer m_potentiometer = 
@@ -144,21 +149,19 @@ private final AnalogPotentiometer m_potentiometer =
  private int m_index;
 private double targetpos = 0;
 private  boolean  isarminmanuel;
-private boolean armrotated;
-private boolean armmid;
-private boolean armhigh;
 
 private boolean stopauto;
 private Integer autonselection;
 //private boolean armnotatcommandedpos;
 
-private double autoroutine;
-private double autonnumber;
+//private double autoroutine;
+private Integer autonnumber;
 public Integer autostep;
-private Command m_autonomousCommand;
-private Command m_DBFL;
-private Command m_DBFR;
-private Command m_Prightside;
+private Command m_CENTERAUTO;
+private Command m_LEFT2PIECE;
+private Command m_LEFTPLACEBALANCE;
+private Command m_RIGHT2PIECE;
+private Command m_RIGHTPLACEBALANCE;
 private RobotContainer m_robotContainer;
 
 
@@ -205,7 +208,7 @@ private RobotContainer m_robotContainer;
     
     autostep = 0;
     stopauto = false;
-    autoroutine = 0;
+    autonnumber = 0;
 		 //auto balance 
   autobalancespeed = 0;
    autobalancesbutton = false;
@@ -216,12 +219,15 @@ private RobotContainer m_robotContainer;
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
    // auto chooser 
-    SendableChooser<Command> m_chooser = new SendableChooser<>();
-    m_chooser.setDefaultOption("Simple Auto", m_autonomousCommand);
-   m_chooser.addOption("Complex Auto", m_autonomousCommand);
-   Shuffleboard.getTab("Autonomous").add(m_chooser);
 
-  
+   Shuffleboard.getTab("Autonomous").add(m_numChooser);
+   m_numChooser.setDefaultOption("center auto then balance", 0);
+   m_numChooser.addOption("right side 2 game piece", 1);
+   m_numChooser.addOption("right side place then balance", 2); 
+   m_numChooser.addOption("left side 2 game piece", 3); 
+   m_numChooser.addOption("left side place then balance", 4); 
+   m_numChooser.addOption("do nothing", 5); 
+
     //motors
    m_IntakeMotor = new CANSparkMax(IntakeDeviceID, MotorType.kBrushed);
    reverseintake = false;
@@ -304,6 +310,8 @@ if (autobalancesbutton == true || autonautobalance ==true){
  SmartDashboard.putBoolean("autobalance button", autobalancesbutton);
  SmartDashboard.putBoolean("stop auto?", stopauto);
  SmartDashboard.getBoolean("stop auto?", false);
+SmartDashboard.putNumber("selected auto number", m_numChooser.getSelected());
+autonnumber = m_numChooser.getSelected();
 
  if (tyt< -.25
  && tyt>-5.25
@@ -361,12 +369,12 @@ Blinken.set(.57);
   @Override
   public void autonomousInit() {
 
-    SendableChooser<Command> m_chooser = new SendableChooser<>();
-
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    m_DBFL = m_robotContainer.getDBFL();
-    m_Prightside = m_robotContainer.getPrightside();
-    m_DBFR = m_robotContainer.getDBFR();
+   
+    m_CENTERAUTO = m_robotContainer.getCENTERAUTO();
+    m_LEFT2PIECE = m_robotContainer.getLEFT2PIECE();
+    m_LEFTPLACEBALANCE = m_robotContainer.getLEFTPLACEBALANCE();
+    m_RIGHT2PIECE = m_robotContainer.getRIGHT2PIECE();
+    m_RIGHTPLACEBALANCE = m_robotContainer.getRIGHTPLACEBALANCE();
     homingstep = 0;
     m_telescopehome = 0;
     cubeaquired = false;
@@ -381,7 +389,6 @@ Blinken.set(.57);
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    double p = SmartDashboard.getNumber("P Gain", 0);
     brakSolenoid.set(true);
     if (homingstep == 0){
       homingstep = 1;
@@ -444,14 +451,13 @@ Blinken.set(.57);
  * limelight drive in
  * drop*/
 
- autonnumber = SmartDashboard.getNumber("auto selection", 0);
  double position = m_potentiometer.get()+armoffsetamount; 
  double pidOut = m_armpidController.calculate(position); 
 if(m_telescopehome == 1){
   m_armpidController.setSetpoint(kSetpointsMeters[m_index]);
   m_rotate.set(pidOut);
 }
- if (autostep == 0 && !stopauto){
+ if (autostep == 0 && autonnumber != 5){
   autostep = 1;
  }
 // Run the PID Controller
@@ -484,9 +490,10 @@ if(m_telescopehome == 1){
    if (autostep == 5){
     m_index = 5;
     m_gripperSolenoid.set(true);
-    Timer.delay(.3);
+    Timer.delay(.4);
     autostep = 6;
    }
+
    
    if (autostep == 6){
     m_index = 5;
@@ -494,7 +501,7 @@ if(m_telescopehome == 1){
     m_Telescope.set(ControlMode.Position,0);
     autostep = 7;
    }
-   if (autostep == 7 && m_Telescope.getSelectedSensorPosition()>-35000){
+   if (autostep == 7 && m_Telescope.getSelectedSensorPosition()>-20000){
     //m_index = 3;
     m_gripperSolenoid.set(true);
     m_Telescope.set(ControlMode.Position,0);    
@@ -507,35 +514,34 @@ if(m_telescopehome == 1){
     autostep = 9;
    }
 
-   if (autostep == 9 /*&& (Math.abs(kSetpointsMeters[3]-position))<.15*/){
-    //m_IntakeMotor.set(-.65);
-    //m_IntakeSolenoid.set(true);
+   if (autostep == 9){
     autostep = 10;
+    m_index = 3;
     autoTimer.restart();
    }
- 
-    
+
+   if(autostep == 9 && (autonnumber == 1 || autonnumber ==3)){
+    m_IntakeMotor.set(-.65);
+    m_IntakeSolenoid.set(true); 
+   }
+     
     if (autostep == 10){
-    if (m_Prightside != null) {
-      //m_index = 3;
-      //m_DBFL.schedule();//2 game piece auto
-      m_DBFL.schedule();//drive balance from left side
-      //m_DBFR.schedule();//drive balance from right side
-      //m_Prightside.schedule();// right side 2 game piece
-      autostep = 11;
-      
-    }}
+    if (m_CENTERAUTO != null) {if (autonnumber == 0){m_CENTERAUTO.schedule();}autostep = 11;}
+    if (m_RIGHT2PIECE != null){if (autonnumber == 1){m_RIGHT2PIECE.schedule();}autostep = 11;}
+    if (m_RIGHTPLACEBALANCE != null){if (autonnumber == 2){m_RIGHTPLACEBALANCE.schedule();}autostep = 11;}
+    if (m_LEFT2PIECE != null){if (autonnumber == 3){m_LEFT2PIECE.schedule();}autostep = 11;}
+    if (m_LEFTPLACEBALANCE != null){if (autonnumber == 4){m_LEFTPLACEBALANCE.schedule();}autostep = 11;}
+    }
     if (autostep == 11 && autoTimer.get()>.5) {
       m_index = 3;      
     }
 
-
-    if (autostep == 11 && !m_DBFL.isScheduled()){
-      //m_Telescope.set(ControlMode.Position,-12000);
-      //autostep = 12;
-      autostep = 30;
-    } 
-     
+    if (autostep == 11 && !m_CENTERAUTO.isScheduled()){autostep = 30;}
+    if (autostep == 11 && !m_RIGHT2PIECE.isScheduled()){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);}
+    if (autostep == 11 && !m_RIGHTPLACEBALANCE.isScheduled()){autostep = 30;}
+    if (autostep == 11 && !m_LEFT2PIECE.isScheduled()){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);}  
+    if (autostep == 11 && !m_LEFTPLACEBALANCE.isScheduled()){autostep = 30;}  
+    
     
     if (autostep == 12){
       m_Telescope.set(ControlMode.Position,-12000);
@@ -603,9 +609,12 @@ if(m_telescopehome == 1){
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-      }
+
+    m_CENTERAUTO.cancel();
+    m_LEFT2PIECE.cancel();
+    m_LEFTPLACEBALANCE.cancel();
+    m_RIGHT2PIECE.cancel();
+    m_RIGHTPLACEBALANCE.cancel();
 
     isarminmanuel = true;
     homingstep = 0;
@@ -811,8 +820,8 @@ if(extenedTelescope){
 */
 
 
- if(m_potentiometer.get() < 1 
- || m_potentiometer.get() > 4.8 
+ if(m_potentiometer.get() < .75
+ || m_potentiometer.get() > 4.8
  || homingstep == 10
  || homingstep != 6){
  isarminmanuel = true;

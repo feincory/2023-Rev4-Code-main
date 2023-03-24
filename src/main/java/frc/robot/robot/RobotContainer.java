@@ -113,24 +113,29 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
+  public Command getLEFT2PIECE() {
     // An example command will be run in autonomous
     //return exampleAuto.trajectory(m_exampleSubsystem);
-    return new exampleAuto(s_Swerve);
+    return new LEFT2PIECE(s_Swerve);
   }
-  public Command getDBFL() {
+  public Command getLEFTPLACEBALANCE() {
     // An example command will be run in autonomous
     //return exampleAuto.trajectory(m_exampleSubsystem);
-    return new DBFL(s_Swerve);
+    return new LEFTPLACEBALANCE(s_Swerve);
   }
-  public Command getDBFR() {
+  public Command getRIGHTPLACEBALANCE() {
     // An example command will be run in autonomous
     //return exampleAuto.trajectory(m_exampleSubsystem);
-    return new DBFR(s_Swerve);
+    return new RIGHTPLACEBALANCE(s_Swerve);
   }
-  public Command getPrightside() {
+  public Command getRIGHT2PIECE() {
     // An example command will be run in autonomous
     //return exampleAuto.trajectory(m_exampleSubsystem);
-    return new Prightside(s_Swerve);
+    return new RIGHT2PIECE(s_Swerve);
+  }
+  public Command getCENTERAUTO() {
+    // An example command will be run in autonomous
+    //return exampleAuto.trajectory(m_exampleSubsystem);
+    return new CENTERAUTO(s_Swerve);
   }
 }
