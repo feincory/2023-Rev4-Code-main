@@ -61,7 +61,7 @@ public class Robot extends TimedRobot {
   public static CTREConfigs ctreConfigs;
   private final Timer m_timer = new Timer();
   private final Timer autoTimer = new Timer();
-   // Joysticks
+   // Joysticks 
   private final Joystick m_Flight = new Joystick(0);
   private final static XboxController m_Driver2 = new XboxController(1);
 
@@ -108,7 +108,7 @@ private WPI_TalonSRX m_Telescope;
 //Rotate Motor
 private static final int RotateID = 24;
 private CANSparkMax m_rotate;
-private boolean dropbutton;
+//private boolean dropbutton;
 private double dropamount;
 private double adjustiedposition;
  // Controller
@@ -814,7 +814,7 @@ if(extenedTelescope){
     telescopecommandposition = -10.0;
   }
 
- if (Math.abs(kSetpointsMeters[m_index]-m_potentiometer.get()+armoffsetamount)>.4){
+ if (Math.abs(kSetpointsMeters[m_index]-m_potentiometer.get()+armoffsetamount)>.52){
     extenedTelescope = false;
     telescopecommandposition = 0.0;
  }
@@ -844,11 +844,19 @@ if(extenedTelescope){
  isarminmanuel = true;
  }else {isarminmanuel = false;
   }
-  if(m_index == 0 || m_index == 1){
+  if(m_index == 0){
     dropamount =-.1;
   }
-  if(m_index == 5 || m_index == 4){
+  if(m_index == 1){
+    dropamount =-.138;
+  }
+
+
+  if(m_index == 5){
     dropamount =.1;
+  }
+  if(m_index == 4){
+    dropamount =.138;
   }
   
   if(m_Flight.getRawButton(13)){
