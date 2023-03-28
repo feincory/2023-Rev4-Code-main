@@ -158,7 +158,10 @@ private Integer autonselection;
 //private double autoroutine;
 private Integer autonnumber;
 public Integer autostep;
+
 private Command m_CENTERAUTO;
+private Command m_LEFTCABLE;
+private Command m_RIGHTCABLE;
 private Command m_LEFT2PIECE;
 private Command m_LEFTPLACEBALANCE;
 private Command m_RIGHT2PIECE;
@@ -228,7 +231,8 @@ private RobotContainer m_robotContainer;
    m_numChooser.addOption("left side 2 game piece", 3); 
    m_numChooser.addOption("left side place then balance", 4); 
    m_numChooser.addOption("do nothing", 5); 
-
+   m_numChooser.addOption("LEFT SIDE OVER CABLE PROTECTOR", 6); 
+   m_numChooser.addOption("RIGHT SIDE OVER CABLE PROTECTOR", 7); 
     //motors
    m_IntakeMotor = new CANSparkMax(IntakeDeviceID, MotorType.kBrushed);
    reverseintake = false;
@@ -376,6 +380,8 @@ Blinken.set(.57);
     m_LEFTPLACEBALANCE = m_robotContainer.getLEFTPLACEBALANCE();
     m_RIGHT2PIECE = m_robotContainer.getRIGHT2PIECE();
     m_RIGHTPLACEBALANCE = m_robotContainer.getRIGHTPLACEBALANCE();
+    m_LEFTCABLE = m_robotContainer.getLEFTCABLE();
+    m_RIGHTCABLE = m_robotContainer.getRIGHTCABLE();
     homingstep = 0;
     m_telescopehome = 0;
     cubeaquired = false;
@@ -527,7 +533,7 @@ if(m_telescopehome == 1){
     autostep = 9;
    }
 
-   if(autostep == 9 && (autonnumber == 1 || autonnumber ==3)){
+   if(autostep == 9 && (autonnumber == 1 || autonnumber ==3|| autonnumber ==6|| autonnumber ==7)){
     m_IntakeMotor.set(-.6);
     m_IntakeSolenoid.set(true); 
    }
@@ -546,7 +552,9 @@ if(m_telescopehome == 1){
     if (m_RIGHTPLACEBALANCE != null){if (autonnumber == 2){m_RIGHTPLACEBALANCE.schedule();}autostep = 11;}
     if (m_LEFT2PIECE != null){if (autonnumber == 3){m_LEFT2PIECE.schedule();}autostep = 11;}
     if (m_LEFTPLACEBALANCE != null){if (autonnumber == 4){m_LEFTPLACEBALANCE.schedule();}autostep = 11;}
-    }
+    if (m_LEFTCABLE != null){if (autonnumber == 6){m_LEFTCABLE.schedule();}autostep = 11;}  
+    if (m_RIGHTCABLE != null){if (autonnumber == 7){m_RIGHTCABLE.schedule();}autostep = 11;}   
+  }
     if (autostep == 11 && autoTimer.get()>.5) {
       m_index = 3;
           
@@ -557,8 +565,10 @@ if(m_telescopehome == 1){
     if (autostep == 11 && !m_RIGHT2PIECE.isScheduled()&&autonnumber==1){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);}
     if (autostep == 11 && !m_RIGHTPLACEBALANCE.isScheduled()&&autonnumber==2){autostep = 30;}
     if (autostep == 11 && !m_LEFT2PIECE.isScheduled()&&autonnumber==3){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);}  
-    if (autostep == 11 && !m_LEFTPLACEBALANCE.isScheduled()&&autonnumber==4){autostep = 30;}  
-    
+    if (autostep == 11 && !m_LEFTPLACEBALANCE.isScheduled()&&autonnumber==4){autostep = 30;}
+
+    if (autostep == 11 && !m_LEFTCABLE.isScheduled()&&autonnumber==6){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);} 
+    if (autostep == 11 && !m_RIGHTCABLE.isScheduled()&&autonnumber==7){autostep = 12;m_Telescope.set(ControlMode.Position,-12000);}     
     
     if (autostep == 12){
       m_Telescope.set(ControlMode.Position,-12000);
@@ -578,7 +588,7 @@ if(m_telescopehome == 1){
       autostep = 15;
        }   
 
-   if (autostep == 15 && m_Telescope.getSelectedSensorPosition()>-2000){
+   if (autostep == 15 && m_Telescope.getSelectedSensorPosition()>-2000 && autonnumber!=6 && autonnumber!=7){
     m_index = 5; 
     if((Math.abs(kSetpointsMeters[5]-position))<.75){
     autostep=16;

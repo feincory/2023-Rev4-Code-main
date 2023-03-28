@@ -138,4 +138,14 @@ public class RobotContainer {
     //return exampleAuto.trajectory(m_exampleSubsystem);
     return new CENTERAUTO(s_Swerve);
   }
+  public Command getLEFTCABLE() {
+    // An example command will be run in autonomous
+    //return exampleAuto.trajectory(m_exampleSubsystem);
+    return new LEFTCABLE(s_Swerve);
+  }
+  public Command getRIGHTCABLE() {
+    // An example command will be run in autonomous
+    //return exampleAuto.trajectory(m_exampleSubsystem);
+    return new RIGHTCABLE(s_Swerve);
+  }
 }
