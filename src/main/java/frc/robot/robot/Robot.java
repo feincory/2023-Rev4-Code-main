@@ -136,7 +136,7 @@ static final double[] kSetpointsMeters = {1.45,1.60,2.87,2.98,4.25,4.39};
 private static final double kPa = 1.7;
 private static final double kIa = 0.0;
 private static final double kDa = 0.0;
-public double armoffsetamount = .14;//was at .025
+public double armoffsetamount = .025;//was at .000
 public double armwithoffset;
 public boolean armhigh;
 public boolean armmid;
@@ -301,10 +301,10 @@ private RobotContainer m_robotContainer;
     double tat = LimelightHelpers.getTA("limelight-top");
 //autobalance logic
 gyropitch = Swerve.gyro.getRoll();
-//autobalancesbutton = m_Flight.getRawButton(13);
+autobalancesbutton = m_Flight.getRawButton(7);
 if (autobalancesbutton == true || autonautobalance ==true){
  
- autobalancespeed = 0-gyropitch*.041;
+ autobalancespeed = 0-gyropitch*.055;
    /* if(gyropitch < -12){
       autobalancespeed = .55;
     }else if(gyropitch > 12){
@@ -541,6 +541,7 @@ if(m_telescopehome == 1){
    if (autostep == 9){
     autostep = 10;
     m_index = 3;
+
     autoTimer.restart();
    }
 
@@ -768,6 +769,8 @@ if (/*m_Driver2.getRightBumperPressed()||*/m_Flight.getRawButtonPressed(10)||m_F
   m_gripperSolenoid.set(true);
   m_timer.restart();
 }  
+
+
 if (m_Driver2.getRightBumperPressed()){
   m_gripperSolenoid.set(true);
  // m_timer.restart();
