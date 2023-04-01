@@ -82,6 +82,14 @@ public class Robot extends TimedRobot {
  public double gyropitch;
  public static boolean autonautobalance;
 
+  //Auto Balance Varibles 
+  public static double apriltagrotatespeed;
+  public static double apriltagstrafespeed;
+  public static double apriltagtranslatespeed;
+  public static boolean apriltagealignbutton;
+  public double gyroyaw;
+  
+
 
 // Analog Input
 //public AnalogInput m_armAnalogInput = new AnalogInput(0);
@@ -129,14 +137,18 @@ private double telescopemanual;
 private boolean telescopesafe;
 
 //Arm Rotation Stuff
-static final int kPotChannel = 0;  
+static final int kPotChannel = 0;
 static final double kFullHeightMeters = 5;
 static final double[] kSetpointsMeters = {1.45,1.60,2.87,2.98,4.25,4.39};
+//{1.45,1.60,2.87,2.98,4.25,4.39};
 //{1.45,1.53,2.1,2.85,2.98,3.55,4.25,4.39}
 private static final double kPa = 1.7;
 private static final double kIa = 0.0;
 private static final double kDa = 0.0;
-public double armoffsetamount = .025;//was at .000
+
+//-voltage makes the arm go torwards bettery 
+//+voltage make the arm go torwars intake
+public double armoffsetamount = -.025;//was at .000
 public double armwithoffset;
 public boolean armhigh;
 public boolean armmid;
@@ -297,20 +309,27 @@ private RobotContainer m_robotContainer;
     CommandScheduler.getInstance().run();
     double tyb = LimelightHelpers.getTY("limelight-bottom");
     double tab = LimelightHelpers.getTA("limelight-bottom");
+    double [] botpose = LimelightHelpers.getCameraPose_TargetSpace("limelight-bottom");
     double tyt = LimelightHelpers.getTY("limelight-top");
     double tat = LimelightHelpers.getTA("limelight-top");
 //autobalance logic
 gyropitch = Swerve.gyro.getRoll();
 autobalancesbutton = m_Flight.getRawButton(7);
 if (autobalancesbutton == true || autonautobalance ==true){
- 
- autobalancespeed = 0-gyropitch*.055;
-   /* if(gyropitch < -12){
-      autobalancespeed = .55;
-    }else if(gyropitch > 12){
-      autobalancespeed = -.55;}
-*/
+  autobalancespeed = 0-gyropitch*.055;
     }
+
+gyroyaw = Swerve.gyro.getYaw();
+apriltagealignbutton = m_Flight.getRawButton(6);
+if (apriltagealignbutton == true /*|| autonautobalance ==true*/){
+  apriltagrotatespeed = 0-gyroyaw*.14;
+  apriltagstrafespeed = (-.8-botpose[2])*-1.5;
+  apriltagtranslatespeed = 0-botpose[0]*2.7;
+    }
+
+
+    SmartDashboard.putNumber("april tag botpose1", botpose[0]);  
+    SmartDashboard.putNumber("april tag formula", (-1-botpose[2])*-1.5);  
  SmartDashboard.putNumber("gyro pitch", gyropitch);
  SmartDashboard.putBoolean("autobalance button", autobalancesbutton);
  SmartDashboard.putBoolean("stop auto?", stopauto);
