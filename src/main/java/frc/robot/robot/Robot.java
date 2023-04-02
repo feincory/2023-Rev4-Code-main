@@ -48,8 +48,6 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 //import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.InvertType;
-
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 //import edu.wpi.first.wpilibj.Timer;
 
@@ -104,12 +102,9 @@ private boolean reverseintake;
 //private static final int ConvayorDeviceID = 26;
 //private CANSparkMax m_convayor;
  //Telescope
-
+private static final int TelescopeDeviceID = 25;
 //private CANSparkMax m_Telescope;
 private WPI_TalonSRX m_Telescope;
-private static final int TelescopeDeviceID = 25;
-//private WPI_TalonSRX m_Telescopefollower;
-//private static final int TelescopeDeviceIDfollower = 26;
 //Rotate Motor
 private static final int RotateID = 24;
 private CANSparkMax m_rotate;
@@ -200,19 +195,13 @@ private RobotContainer m_robotContainer;
     m_Telescope.enableCurrentLimit(true);
     m_Telescope.configPeakCurrentLimit(50, 100);
     m_Telescope.configClosedloopRamp(.15);
-    //m_Telescope.setSensorPhase(true);
-    //m_Telescope.setSensorPhase(false);
+    m_Telescope.setSensorPhase(true);
     m_Telescope.configNominalOutputForward(0);
 		m_Telescope.configNominalOutputReverse(0);
-		m_Telescope.configPeakOutputForward(.2);
-		m_Telescope.configPeakOutputReverse(-.2);
+		m_Telescope.configPeakOutputForward(1);
+		m_Telescope.configPeakOutputReverse(-1);
     m_Telescope.configAllowableClosedloopError(0,0);
-    //m_Telescopefollower = new WPI_TalonSRX(TelescopeDeviceIDfollower);
-    //m_Telescopefollower.follow(m_Telescope);
-    //m_Telescopefollower.setInverted(InvertType.FollowMaster);
-    
     telescopeencoderpos = 1500;
-
     		/* Config Position Closed Loop gains in slot0, tsypically kF stays zero. */
 		
 		m_Telescope.config_kP(0, .3);
