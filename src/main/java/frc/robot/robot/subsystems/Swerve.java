@@ -47,6 +47,16 @@ public class Swerve extends SubsystemBase {
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates;
+        if(Robot.apriltagealignbutton){
+            swerveModuleStates = 
+            Constants.Swerve.swerveKinematics.toSwerveModuleStates(
+               ChassisSpeeds.fromFieldRelativeSpeeds(
+                                    Robot.apriltagstrafespeed, 
+                                    Robot.apriltagtranslatespeed, 
+                                    Robot.apriltagrotatespeed, 
+                                    getYaw()
+                                ));
+        } else {
         if(Robot.autobalancesbutton || Robot.autonautobalance){
             swerveModuleStates = 
             Constants.Swerve.swerveKinematics.toSwerveModuleStates(
@@ -70,7 +80,7 @@ public class Swerve extends SubsystemBase {
                                     translation.getX(), 
                                     translation.getY(), 
                                     rotation)
-                                );}
+                                );}}
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
         for(SwerveModule mod : mSwerveMods){
