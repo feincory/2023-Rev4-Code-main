@@ -48,6 +48,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 //import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.InvertType;
+
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 //import edu.wpi.first.wpilibj.Timer;
 
@@ -82,6 +84,15 @@ public class Robot extends TimedRobot {
  public double gyropitch;
  public static boolean autonautobalance;
 
+  //Auto Balance Varibles 
+  public static double apriltagrotatespeed;
+  public static double apriltagstrafespeed;
+  public static double apriltagtranslatespeed;
+  public static boolean apriltagealignbutton;
+  public static boolean apriltagautonbutton;
+  public double gyroyaw;
+  
+
 
 // Analog Input
 //public AnalogInput m_armAnalogInput = new AnalogInput(0);
@@ -105,6 +116,9 @@ private boolean reverseintake;
 private static final int TelescopeDeviceID = 25;
 //private CANSparkMax m_Telescope;
 private WPI_TalonSRX m_Telescope;
+private static final int TelescopeDeviceIDfollower = 26;
+//private CANSparkMax m_Telescope;
+private WPI_TalonSRX m_Telescopefollower;
 //Rotate Motor
 private static final int RotateID = 24;
 private CANSparkMax m_rotate;
@@ -131,12 +145,12 @@ private boolean telescopesafe;
 //Arm Rotation Stuff
 static final int kPotChannel = 0;  
 static final double kFullHeightMeters = 5;
-static final double[] kSetpointsMeters = {1.45,1.60,2.87,2.98,4.25,4.39};
+static final double[] kSetpointsMeters = {1.45,1.60,2.87,2.98,4.25,4.41};
 //{1.45,1.53,2.1,2.85,2.98,3.55,4.25,4.39}
 private static final double kPa = 1.7;
-private static final double kIa = 0.0;
+private static final double kIa = 0.005;
 private static final double kDa = 0.0;
-public double armoffsetamount = .025;//was at .000
+public double armoffsetamount = -.025;//was at .000
 public double armwithoffset;
 public boolean armhigh;
 public boolean armmid;
@@ -194,17 +208,23 @@ private RobotContainer m_robotContainer;
     m_Telescope.setInverted(false);
     m_Telescope.enableCurrentLimit(true);
     m_Telescope.configPeakCurrentLimit(50, 100);
-    m_Telescope.configClosedloopRamp(.15);
+    m_Telescope.configClosedloopRamp(.1);
     m_Telescope.setSensorPhase(true);
+    //m_Telescope.setSensorPhase(false);
     m_Telescope.configNominalOutputForward(0);
 		m_Telescope.configNominalOutputReverse(0);
 		m_Telescope.configPeakOutputForward(1);
 		m_Telescope.configPeakOutputReverse(-1);
     m_Telescope.configAllowableClosedloopError(0,0);
+    m_Telescopefollower = new WPI_TalonSRX(TelescopeDeviceIDfollower);
+    m_Telescopefollower.follow(m_Telescope);
+    m_Telescopefollower.setInverted(InvertType.FollowMaster);
+    
+
     telescopeencoderpos = 1500;
     		/* Config Position Closed Loop gains in slot0, tsypically kF stays zero. */
 		
-		m_Telescope.config_kP(0, .3);
+		m_Telescope.config_kP(0, .175);
 		m_Telescope.config_kI(0, 0);
 		m_Telescope.config_kD(0, 0);
     m_Telescope.config_kF(0, 0);
@@ -248,8 +268,8 @@ private RobotContainer m_robotContainer;
    m_rotate.restoreFactoryDefaults(); 
    m_rotate.setIdleMode(IdleMode.kBrake);
    m_rotate.setInverted(true);
-   m_rotate.setOpenLoopRampRate(.4);
-   m_rotate.setClosedLoopRampRate(.2);
+   m_rotate.setOpenLoopRampRate(.2);
+   m_rotate.setClosedLoopRampRate(.1);
    
    Blinken.set(-.89);
    
@@ -299,18 +319,24 @@ private RobotContainer m_robotContainer;
     double tab = LimelightHelpers.getTA("limelight-bottom");
     double tyt = LimelightHelpers.getTY("limelight-top");
     double tat = LimelightHelpers.getTA("limelight-top");
+    double [] botpose = LimelightHelpers.getCameraPose_TargetSpace("limelight-bottom");
 //autobalance logic
 gyropitch = Swerve.gyro.getRoll();
 autobalancesbutton = m_Flight.getRawButton(7);
 if (autobalancesbutton == true || autonautobalance ==true){
  
  autobalancespeed = 0-gyropitch*.055;
-   /* if(gyropitch < -12){
-      autobalancespeed = .55;
-    }else if(gyropitch > 12){
-      autobalancespeed = -.55;}
-*/
     }
+
+gyroyaw = Swerve.gyro.getYaw();
+apriltagealignbutton = m_Flight.getRawButton(6) || apriltagautonbutton;
+
+if (apriltagealignbutton == true /*|| autonautobalance ==true*/){
+  apriltagrotatespeed = 0-gyroyaw*.14;
+  apriltagstrafespeed = (-.7-botpose[2])*-1.5;
+  apriltagtranslatespeed = 0-botpose[0]*2.7;}
+
+
  SmartDashboard.putNumber("gyro pitch", gyropitch);
  SmartDashboard.putBoolean("autobalance button", autobalancesbutton);
  SmartDashboard.putBoolean("stop auto?", stopauto);
@@ -385,7 +411,7 @@ Blinken.set(.57);
     homingstep = 0;
     m_telescopehome = 0;
     cubeaquired = false;
-
+    apriltagautonbutton = false;
     // schedule the autonomous command (example)
     /*if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -489,7 +515,8 @@ if(m_telescopehome == 1){
 
  if (autostep == 2 ){
   m_index = 5;
-  if((Math.abs(kSetpointsMeters[5]-position))<.75){autostep=3;
+  if((Math.abs(kSetpointsMeters[5]-position))<.3){
+    autostep=3;
   }
 }
   if (autostep == 3){
@@ -584,19 +611,22 @@ if(m_telescopehome == 1){
        }
 
     if (autostep == 14 && autoTimer.get()>.3){
-      m_Telescope.set(ControlMode.Position,0);
+      m_Telescope.set(ControlMode.Position,-500);
       m_IntakeMotor.set(0);
+      autoTimer.restart();
       autostep = 15;
        }   
 
-   if (autostep == 15 && m_Telescope.getSelectedSensorPosition()>-2000 && autonnumber!=6 && autonnumber!=7){
+   if (autostep == 15 && m_Telescope.getSelectedSensorPosition()>-2000 /*&& autonnumber!=6 && autonnumber!=7*/){
     m_index = 5; 
-    if((Math.abs(kSetpointsMeters[5]-position))<.75){
-    autostep=16;
+    if((Math.abs(kSetpointsMeters[5]-position))<.3){
+      apriltagautonbutton = true;
+      autoTimer.restart();
+      autostep=16;
     }
    } 
 
-   if (autostep == 16 ){
+   if (autostep == 16 && autoTimer.get()>1){
     m_Telescope.set(ControlMode.Position,kTelescopearray[5]);
      m_index = 5;
      autostep = 17;
@@ -650,7 +680,7 @@ if(m_telescopehome == 1){
     m_index = 3;
     mrflippystate = false;
     autonautobalance = false;
-
+    apriltagautonbutton = false;
    // s_swerve.resetModulesToAbsolute();
   }
   
@@ -701,7 +731,7 @@ if (homingstep == 3 && !armhomingswitch.get()){
   homingstep = 5;
 }
   else if (homingstep ==3){ 
-  m_Telescope.set(.25); 
+  m_Telescope.set(.2); //homing speed
 }
 
 //4
