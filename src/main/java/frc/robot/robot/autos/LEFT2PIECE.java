@@ -19,7 +19,7 @@ import frc.robot.robot.subsystems.Swerve;
 public class LEFT2PIECE extends SequentialCommandGroup {
     public LEFT2PIECE(Swerve s_Swerve){
         TrajectoryConfig config =
-            new TrajectoryConfig(4.3, 4)
+            new TrajectoryConfig(4.5, 4)
                 .setKinematics(Constants.Swerve.swerveKinematics);
 
         // An example trajectory to follow.  All units in meters.

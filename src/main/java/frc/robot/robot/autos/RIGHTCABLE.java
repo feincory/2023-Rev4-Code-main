@@ -19,7 +19,7 @@ import frc.robot.robot.subsystems.Swerve;
 public class RIGHTCABLE extends SequentialCommandGroup {
     public RIGHTCABLE(Swerve s_Swerve){
         TrajectoryConfig config =
-            new TrajectoryConfig(1.8, 1.5)
+            new TrajectoryConfig(3.3, 1.7)
                 .setKinematics(Constants.Swerve.swerveKinematics);
 
         // An example trajectory to follow.  All units in meters.
@@ -28,9 +28,9 @@ public class RIGHTCABLE extends SequentialCommandGroup {
                 // Start at the origin facing the +X direction
                 new Pose2d(0, 0, new Rotation2d(0)),
                 // Pass through these two interior waypoints, making an 's' curve path
-                List.of(new Translation2d(4.5, .28),new Translation2d(4.5, .29)),
+                List.of(new Translation2d(5, .29),new Translation2d(5.1, .32)),
                 // End 3 meters straight ahead of where we started, facing forward
-                new Pose2d(4, 0.1, new Rotation2d(0)),
+                new Pose2d(1.5, 0.25, new Rotation2d(0)),
                 config);
 
         var thetaController =

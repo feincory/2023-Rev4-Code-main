@@ -135,6 +135,8 @@ public int m_telescopehome;
 public double telescopeencoderpos;
 public int homingstep;
 public Double telescopecommandposition;
+
+//static final double[] kTelescopearray = {-43000,-23000,-13300,-13300,-23000,-43000}; if inspector gives you grief use these numbers
 static final double[] kTelescopearray = {-45000,-23000,-13300,-13300,-23000,-45000};
 public double stickDeadband;
 //{-45000,-23000,-22000,-14000,-14000,-22000,-23000,-45000}
@@ -145,10 +147,10 @@ private boolean telescopesafe;
 //Arm Rotation Stuff
 static final int kPotChannel = 0;  
 static final double kFullHeightMeters = 5;
-static final double[] kSetpointsMeters = {1.45,1.60,2.87,2.98,4.25,4.41};
-//{1.45,1.53,2.1,2.85,2.98,3.55,4.25,4.39}
-private static final double kPa = 1.7;
-private static final double kIa = 0.005;
+static final double[] kSetpointsMeters = {1.46,1.60,2.88,2.99,4.27,4.42};
+//{1.45,1.53,2.85,2.98,4.25,4.39}
+private static final double kPa = 2.0;
+private static final double kIa = 0.000;
 private static final double kDa = 0.0;
 public double armoffsetamount = -.025;//was at .000
 public double armwithoffset;
@@ -322,14 +324,14 @@ private RobotContainer m_robotContainer;
     double [] botpose = LimelightHelpers.getCameraPose_TargetSpace("limelight-bottom");
 //autobalance logic
 gyropitch = Swerve.gyro.getRoll();
-autobalancesbutton = m_Flight.getRawButton(7);
+//autobalancesbutton = m_Flight.getRawButton(7);
 if (autobalancesbutton == true || autonautobalance ==true){
  
  autobalancespeed = 0-gyropitch*.055;
     }
 
 gyroyaw = Swerve.gyro.getYaw();
-apriltagealignbutton = m_Flight.getRawButton(6) || apriltagautonbutton;
+apriltagealignbutton = /*m_Flight.getRawButton(6) ||*/ apriltagautonbutton;
 
 if (apriltagealignbutton == true /*|| autonautobalance ==true*/){
   apriltagrotatespeed = 0-gyroyaw*.14;
@@ -515,7 +517,7 @@ if(m_telescopehome == 1){
 
  if (autostep == 2 ){
   m_index = 5;
-  if((Math.abs(kSetpointsMeters[5]-position))<.3){
+  if((Math.abs(kSetpointsMeters[5]-position))<.1){
     autostep=3;
   }
 }
