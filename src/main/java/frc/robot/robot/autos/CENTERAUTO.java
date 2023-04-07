@@ -19,7 +19,7 @@ import frc.robot.robot.subsystems.Swerve;
 public class CENTERAUTO extends SequentialCommandGroup {
     public CENTERAUTO(Swerve s_Swerve){
         TrajectoryConfig config =
-            new TrajectoryConfig(1.4, 3)
+            new TrajectoryConfig(1.5, 2)
             .setKinematics(Constants.Swerve.swerveKinematics);
         // An example trajectory to follow.  All units in meters.
         Trajectory exampleTrajectory =
@@ -27,9 +27,9 @@ public class CENTERAUTO extends SequentialCommandGroup {
                 // Start at the origin facing the +X direction
                 new Pose2d(0, 0, new Rotation2d(0)),
                 // Pass through these two interior waypoints, making an 's' curve path
-                List.of(new Translation2d(3.8, .025),new Translation2d(3.8, .075)),
+                List.of(new Translation2d(1, .0)),
                 // End 3 meters straight ahead of where we started, facing forward
-                new Pose2d(2.1, .1, new Rotation2d(0)),
+                new Pose2d(2.6, .1, new Rotation2d(0)),
                 config);
 
         var thetaController =

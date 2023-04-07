@@ -19,7 +19,7 @@ import frc.robot.robot.subsystems.Swerve;
 public class LEFTCABLE extends SequentialCommandGroup {
     public LEFTCABLE(Swerve s_Swerve){
         TrajectoryConfig config =
-            new TrajectoryConfig(3.3, 1.7)
+            new TrajectoryConfig(3.5, 2.8)//old3.1 and 1.7
                 .setKinematics(Constants.Swerve.swerveKinematics);
 
         // An example trajectory to follow.  All units in meters.
