@@ -63,6 +63,7 @@ public class Robot extends TimedRobot {
   public static CTREConfigs ctreConfigs;
   private final Timer m_timer = new Timer();
   private final Timer autoTimer = new Timer();
+ // private final Timer intaketimer = new Timer();
    // Joysticks 
   private final Joystick m_Flight = new Joystick(0);
   private final static XboxController m_Driver2 = new XboxController(1);
@@ -426,6 +427,10 @@ Blinken.set(.57);
   @Override
   public void autonomousPeriodic() {
     brakSolenoid.set(true);
+    mrflippySolenoid.set(true);
+    mrflippySolenoidinvesre.set(false);
+
+
     if (homingstep == 0){
       homingstep = 1;
     }
@@ -946,6 +951,10 @@ telescopesafe = true;
   } else {
     reverseintake = false;
   }
+
+//if(m_Flight.getRawButtonPressed(kSolenoidButton)){
+//  intaketimer.reset();
+//}
 
     if (m_Flight.getRawButton(kSolenoidButton)) {
       if(reverseintake){
